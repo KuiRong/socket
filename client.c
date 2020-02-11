@@ -11,53 +11,44 @@ int main(int argc , char *argv[])
 {
     //socket的建立
     int sockfd = 0;
-    sockfd = socket(AF_INET , SOCK_STREAM , 0);
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sockfd == -1){
         printf("Fail to create a socket.");
     }
 
     //socket的連線
-    struct sockaddr_in remoteinfo;
-    bzero(&remoteinfo,sizeof(remoteinfo));
-    remoteinfo.sin_family = PF_INET;
+    struct sockaddr_in remote_info;
+    bzero(&remote_info,sizeof(remote_info));
+    remote_info.sin_family = AF_INET;
 
-    //remoteinfo(server info)
-    remoteinfo.sin_addr.s_addr = inet_addr("127.0.0.1");
-    remoteinfo.sin_port = htons(8700);
+    remote_info.sin_addr.s_addr = inet_addr("172.27.114.31");
+
+    remote_info.sin_port = htons(8700);
 
     //localinfo(client info)
-    struct sockaddr_in localaddr = {0};
-    localaddr.sin_family = AF_INET;
-//    localaddr.sin_addr.s_addr = inet_addr("192.168.2.102");
-    localaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    struct sockaddr_in client_info;
+
+    client_info.sin_family = AF_INET;
+    client_info.sin_addr.s_addr = inet_addr("172.27.120.132");
 
     //bind sockfd to local network interface
-    bind(sockfd, (struct sockaddr*)&localaddr, sizeof(localaddr));
+    bind(sockfd, (struct sockaddr*)&client_info, sizeof(client_info));
 
 //another method to bind client side network interface using setsockopt() with SO_BINDTODEVICE option 
 /***********************************************************************************************************
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(ifr));
-    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name),"enp0s8");
-    printf("ifr_name is %s\n",ifr.ifr_name);
-    char *interface_name;
-    interface_name = "enp0s8\0";
+    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name),"rename3");
 
-    int r =0;
-
-//    if(setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, (void*)&ifr, sizeof(ifr))<0){
-    if(setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, interface_name, 7)<0){
-        printf("bind sockfd to network interface failded,return value is %d\n", r = setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, interface_name, 7));
-	int err = errno;
-	fprintf(stderr, "%s\n", explain_errno_setsockopt(err,sockfd,SOL_SOCKET,SO_BINDTODEVICE,interface_name,7));
-	exit(EXIT_FAILURE);
+    if(setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, (void*)&ifr, sizeof(ifr)) < 0){
+        printf("bind sockfd to network interface failded,return value is\n");
     }else{
         printf("bind sockfd to network interface successed\n");
     }
-************************************************************************************************************/
+ ************************************************************************************************************/
 
-    int err = connect(sockfd,(struct sockaddr *)&info,sizeof(info));
+    int err = connect(sockfd,(struct sockaddr *)&remote_info,sizeof(remote_info));
     if(err==-1){
         printf("Connection error");
     }
@@ -69,8 +60,7 @@ int main(int argc , char *argv[])
     send(sockfd,message,sizeof(message),0);
     recv(sockfd,receiveMessage,sizeof(receiveMessage),0);
 
-    printf("%s",receiveMessage);
-    for(;;){}
+    printf("\n%s",receiveMessage);
     printf("close Socket\n");
     close(sockfd);
     return 0;
